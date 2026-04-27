@@ -17,11 +17,13 @@ kubectl get pod
 
 Pod が稼働していれば OK です。
 
+---
+
 ## 1. ConfigMap を作成する
 
 ― 設定を Pod の外に置く ―
 
-#### ConfigMap を定義する
+#### ConfigMap を定義します。
 ```bash
 cat <<EOF > configmap.yaml
 apiVersion: v1
@@ -42,6 +44,8 @@ kubectl apply -f configmap.yaml
 ```bash
 kubectl get configmap
 ```
+
+---
 
 ## 2. ConfigMap を Pod から参照する
 #### Deployment を修正する。ConfigMap を環境変数として読み込むようにします。
@@ -85,18 +89,20 @@ kubectl apply -f deployment-config.yaml
 kubectl get pod
 ```
 
-#### 環境変数を確認する
+#### 環境変数を確認します。
 ```bash
 kubectl exec -it $(kubectl get pod -l app=sample -o jsonpath='{.items[0].metadata.name}') -- env | grep MESSAGE
 ```
 
-#### 🔍 観察ポイント
+#### 観察
 - 設定は Pod の中に見える
 - しかし定義は Pod の外にある
 
+**設定は Pod の外に定義される**
 
-## 3. Pod を削除する
-― 設定は残るか？ ―
+---
+
+## 3. Pod を削除する（設定は残るか？）
 
 #### Pod を削除します。
 ```bash
@@ -113,22 +119,21 @@ kubectl get pod
 kubectl exec -it $(kubectl get pod -l app=sample -o jsonpath='{.items[0].metadata.name}') -- env | grep MESSAGE
 ```
 
-#### 🔍 観察ポイント
+#### 観察
 - Pod は入れ替わった
 - 設定はそのまま使われている
 
-Pod は設定を「所有していない」
+**Pod は設定を「所有していない」**
 
 
-## 4. ConfigMap を変更する
-― 設定はどこに効くか ―
+## 4. ConfigMap を変更する（設定はどこに効くか）
 
 #### ConfigMap を変更します。
 ```bash
 kubectl edit configmap app-config
 ```
 
-#### MESSAGE の内容を変更して保存してください。
+#### MESSAGE の内容を変更して保存します。
 ```bash
 MESSAGE: "Hello updated ConfigMap"
 ```
@@ -143,10 +148,11 @@ kubectl delete pod -l app=sample
 kubectl exec -it $(kubectl get pod -l app=sample -o jsonpath='{.items[0].metadata.name}') -- env | grep MESSAGE
 ```
 
-#### 🔍 観察▼ポイント
+#### 観察
 - 設定変更は Pod 再作成時に反映される
 - 設定と実行が分離されている
 
+**設定を変更しても、Pod の定義は変わらない**
 
 ## 5. Volume を使う
 ― データの置き場所を考える ―
