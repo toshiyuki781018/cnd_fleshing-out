@@ -2,7 +2,7 @@
 
 ---
 
-想定環境：KillerCoda（Kubernetes クラスタ起動済み）
+想定環境：KillerCoda（Kubernetes クラスタ起動済み）  
 以降の操作はすべて kubectl を使用します。
 
 ---
@@ -19,9 +19,7 @@ Pod が稼働していれば OK です。
 
 ---
 
-## 1. ConfigMap を作成する
-
-― 設定を Pod の外に置く ―
+## 1. ConfigMap を作成する（設定を Pod の外に置く）
 
 #### ConfigMap を定義します。
 ```bash
@@ -48,7 +46,9 @@ kubectl get configmap
 ---
 
 ## 2. ConfigMap を Pod から参照する
-#### Deployment を修正する。ConfigMap を環境変数として読み込むようにします。
+
+#### ConfigMap を環境変数として読み込むようにします。
+
 ```bash
 cat <<EOF > deployment-config.yaml
 apiVersion: apps/v1
@@ -154,10 +154,11 @@ kubectl exec -it $(kubectl get pod -l app=sample -o jsonpath='{.items[0].metadat
 
 **設定を変更しても、Pod の定義は変わらない**
 
-## 5. Volume を使う
-― データの置き場所を考える ―
+---
 
-#### Volume を使う Deployment を作成する
+## 5. Volume を使う（データの置き場所を考える）
+
+#### Volume を使用する Deployment を作成します。
 ```bash
 cat <<EOF > deployment-volume.yaml
 apiVersion: apps/v1
@@ -193,13 +194,15 @@ EOF
 kubectl apply -f deployment-volume.yaml
 ```
 
-#### データを確認する
+#### データを確認します。
 ```bash
 kubectl exec -it $(kubectl get pod -l app=volume-sample -o jsonpath='{.items[0].metadata.name}') -- cat /data/message.txt
 ```
 
-## 6. Pod を削除する
-― データは残るか？ ―
+---
+
+## 6. Pod を削除する（データは残るか？ ）
+
 ```bash
 kubectl delete pod -l app=volume-sample
 ```
@@ -209,26 +212,45 @@ kubectl delete pod -l app=volume-sample
 kubectl exec -it $(kubectl get pod -l app=volume-sample -o jsonpath='{.items[0].metadata.name}') -- ls /data
 ```
 
-#### 🔍 観察ポイント
+#### 観察
 - データは消えている
 - emptyDir は Pod と運命を共にする
 
 
+**データの寿命は、Volume の種類によって決まる**
+
+---
+
 ## 7. Secret について（ここでは体験しない）
-Secret は、概念は ConfigMap と同じ
+Secret の概念は ConfigMap と同じである。  
+ただし用途が異なるため、ここでは操作は行わない。
 
-ただし用途が異なるため、ここでは 操作は行いません。
+重要なのは、「秘匿されているか」より「Pod の外にあるか」という点である。
 
-重要なのは、「秘匿されているか」より「Pod の外にあるか」という点です。
+---
 
-まとめ：このハンズオンで確認したこと
-| 要素 　　　| 役割                     | 
-|-----------|-------------------------|
-|ConfigMap　|設定を Pod の外に出す|
-|Secret　　|秘密情報を Pod の外に出す|
-|Volume	　　|状態の寿命を明確にする|
+## 8. まとめ（このハンズオンで確認したこと）
 
+#### ConfigMap
 
-このハンズオンで確認したかったのは、Pod は実行単位であり、状態や設定の保管場所ではないという前提です。
+- 設定を Pod の外に出す
+- Pod が消えても設定は残る
+- 設定変更は Pod の再作成で反映される
 
-この前提があるからこそ、Pod を捨てられる、自動復旧できる、スケールできるという設計が成立しています。
+#### Secret
+
+- 秘密情報を Pod の外に出す
+- 扱い方は ConfigMap と同じ
+
+#### Volume
+
+- 状態の寿命を明確にする
+- emptyDir は Pod と運命を共にする
+
+このハンズオンで確認したのは、Pod は実行単位であり、  
+状態や設定の保管場所ではない。
+
+では、外部との接続はどこで扱うのか。  
+Ingress / Gateway に進む。
+
+---
