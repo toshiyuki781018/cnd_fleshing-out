@@ -9,7 +9,7 @@
 
 ## 0. 事前確認（現在の状態を見る）
 
-#### まず、何も起きていない状態を確認
+#### まず、何も起きていない状態を確認します。
 ```bash
 kubectl get pod
 ```
@@ -24,7 +24,7 @@ kubectl get pod
 
 ## 1. Pod を作成する（単体の実行単位）
 
-#### Pod 定義ファイルを作成
+#### Pod 定義ファイルを作成します。
 
 ```bash
 cat <<EOF > pod.yaml
@@ -41,17 +41,17 @@ spec:
 EOF
 ```
 
-#### Pod を作成
+#### Pod を作成します。
 ```bash
 kubectl apply -f pod.yaml
 ```
 
-#### 状態を確認
+#### 状態を確認します。
 ```bash
 kubectl get pod
 ```
 
-#### Pod の詳細を確認
+#### Pod の詳細を確認します。
 ```bash
 kubectl describe pod sample-pod
 ```
@@ -66,12 +66,12 @@ kubectl describe pod sample-pod
 
 ## 2. Pod を削除する（壊してみる）
 
-#### Pod を削除
+#### Pod を削除します。
 ```bash
 kubectl delete pod sample-pod
 ```
 
-#### 再度状態を確認
+#### 再度状態を確認します。
 ```bash
 kubectl get pod
 ```
@@ -92,7 +92,7 @@ kubectl get pod
 
 ## 3. Deployment を使って Pod を管理する
 
-#### Deployment 定義ファイルを作成
+#### Deployment 定義ファイルを作成します。
 ```bash
 cat <<EOF > deployment.yaml
 apiVersion: apps/v1
@@ -117,22 +117,22 @@ spec:
 EOF
 ```
 
-#### Deployment を作成
+#### Deployment を作成します。
 ```bash
 kubectl apply -f deployment.yaml
 ```
 
-#### Pod を確認
+#### Pod を確認します。
 ```bash
 kubectl get pod
 ```
 
-#### Pod を削除（もう一度壊す）
+#### Pod を削除します。（もう一度壊す）
 ```bash
 kubectl delete pod -l app=sample
 ```
 
-#### すぐにもう一度確認
+#### すぐにもう一度確認します。
 ```bash
 kubectl get pod
 ```
@@ -149,12 +149,12 @@ kubectl get pod
 
 ## 4. レプリカ数を変更（状態を変える）
 
-#### Deployment のレプリカ数を変更
+#### Deployment のレプリカ数を変更します。
 ```bash
 kubectl scale deployment sample-deployment --replicas=3
 ```
 
-#### Pod を確認
+#### Pod を確認します。
 ```bash
 kubectl get pod
 ```
@@ -169,7 +169,7 @@ kubectl get pod
 
 ## 5. Service を通じて Pod にアクセスする
 
-#### Service を作成
+#### Service を作成します。
 ```bash
 kubectl expose deployment sample-deployment \
   --type=ClusterIP \
@@ -177,12 +177,12 @@ kubectl expose deployment sample-deployment \
   --port=80
 ```
 
-#### Service を確認
+#### Service を確認します。
 ```bash
 kubectl get service
 ```
 
-#### Service 経由でアクセス確認
+#### Service 経由でアクセス確認します。
 ```bash
 kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
   curl http://sample-service
