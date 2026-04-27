@@ -9,7 +9,7 @@
 
 ## 0. 事前確認（現在の状態を見る）
 
-#### まず、何も起きていない状態を確認します。
+#### まず、何も起きていない状態を確認
 ```bash
 kubectl get pod
 ```
@@ -24,7 +24,7 @@ kubectl get pod
 
 ## 1. Pod を作成する（単体の実行単位）
 
-#### Pod 定義ファイルを作成します。
+#### Pod 定義ファイルを作成
 
 ```bash
 cat <<EOF > pod.yaml
@@ -41,17 +41,17 @@ spec:
 EOF
 ```
 
-#### Pod を作成します。
+#### Pod を作成
 ```bash
 kubectl apply -f pod.yaml
 ```
 
-#### 状態を確認します。
+#### 状態を確認
 ```bash
 kubectl get pod
 ```
 
-#### Pod の詳細を見る
+#### Pod の詳細を確認
 ```bash
 kubectl describe pod sample-pod
 ```
@@ -66,12 +66,12 @@ kubectl describe pod sample-pod
 
 ## 2. Pod を削除する（壊してみる）
 
-#### Pod を削除します。
+#### Pod を削除
 ```bash
 kubectl delete pod sample-pod
 ```
 
-#### 再度状態を確認します。
+#### 再度状態を確認
 ```bash
 kubectl get pod
 ```
@@ -117,22 +117,22 @@ spec:
 EOF
 ```
 
-#### Deployment を作成します。
+#### Deployment を作成
 ```bash
 kubectl apply -f deployment.yaml
 ```
 
-#### Pod を確認します。
+#### Pod を確認
 ```bash
 kubectl get pod
 ```
 
-#### Pod を削除してみる（もう一度壊す）
+#### Pod を削除（もう一度壊す）
 ```bash
 kubectl delete pod -l app=sample
 ```
 
-#### すぐにもう一度確認します。
+#### すぐにもう一度確認
 ```bash
 kubectl get pod
 ```
@@ -147,14 +147,14 @@ kubectl get pod
 
 ---
 
-## 4. レプリカ数を変更する（状態を変える）
+## 4. レプリカ数を変更（状態を変える）
 
-#### Deployment のレプリカ数を変更します。
+#### Deployment のレプリカ数を変更
 ```bash
 kubectl scale deployment sample-deployment --replicas=3
 ```
 
-#### Pod を確認します。
+#### Pod を確認
 ```bash
 kubectl get pod
 ```
@@ -169,7 +169,7 @@ kubectl get pod
 
 ## 5. Service を通じて Pod にアクセスする
 
-#### Service を作成する
+#### Service を作成
 ```bash
 kubectl expose deployment sample-deployment \
   --type=ClusterIP \
@@ -177,7 +177,7 @@ kubectl expose deployment sample-deployment \
   --port=80
 ```
 
-#### Service を確認します。
+#### Service を確認
 ```bash
 kubectl get service
 ```
