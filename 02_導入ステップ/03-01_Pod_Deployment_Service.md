@@ -13,11 +13,12 @@
 ```bash
 kubectl get pod
 ```
-Pod が存在しないことを確認してください。
 
-🔍 観察ポイント
+#### 観察
 - 何も作っていない状態では、何も存在しない
 - **Kubernetes** は「何も勝手に起動しない」
+
+**何も定義していなければ、何も起きない**
 
 ---
 
@@ -55,9 +56,11 @@ kubectl get pod
 kubectl describe pod sample-pod
 ```
 
-#### 観察ポイント
+#### 観察
 - Pod は「1つの実行単位」
 - 管理しているのは Kubernetes だが、守ってはいない
+
+**Pod は動くが、維持されない**
 
 ---
 
@@ -73,22 +76,21 @@ kubectl delete pod sample-pod
 kubectl get pod
 ```
 
-#### 観察ポイント
+#### 観察
 - Pod は消えたまま戻らない
 - Kubernetes は「単体 Pod を守らない」
-- 壊れたら終わり
 
-ここで一度立ち止まります。
+**壊れたら終わる**
 
 #### 問い
 - これが本番だったらどうなるか？
 - 毎回人が作り直すのか？
 
+
+
 ---
 
 ## 3. Deployment を使って Pod を管理する
-
-次に、Deployment を使います。
 
 #### Deployment 定義ファイルを作成
 ```bash
@@ -135,14 +137,13 @@ kubectl delete pod -l app=sample
 kubectl get pod
 ```
 
-#### 観察ポイント
+#### 観察
 
 - Pod が自動的に再作成される
 - 自分は何も指示していない
-- 「あるべき状態」が保たれている
 
-ここで重要なのは、Pod を守っているのは人ではなく Deployment
-人は「状態」を定義しているだけという点です。
+**状態が保たれる**  
+**守っているのは人ではなく仕組み**
 
 ---
 
@@ -158,17 +159,16 @@ kubectl scale deployment sample-deployment --replicas=3
 kubectl get pod
 ```
 
-#### 観察ポイント
+#### 観察
 - Pod が3つ存在する
-- どの Pod が増えたかは意識していない
-- 人は「数」しか指定していない
+- 個体ではなく「数」だけを指定している
 
-ここでのポイントは、「どれを起動するか」を人が考えていない
-ということです。
+**人は状態だけを指定する**
 
 ---
 
 ## 5. Service を通じて Pod にアクセスする
+
 #### Service を作成する
 ```bash
 kubectl expose deployment sample-deployment \
@@ -182,18 +182,18 @@ kubectl expose deployment sample-deployment \
 kubectl get service
 ```
 
-
-#### Service 経由でアクセス確認。KillerCoda 環境では、次のように確認します。
+#### Service 経由でアクセス確認
 ```bash
 kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
   curl http://sample-service
 ```
 
-#### 観察ポイント
+#### 観察
 
 - Pod を直接指定していない
 - Service が間に入っている
-- Pod が増減してもアクセス方法は変わらない
+
+**実体ではなく入口を扱う**
 
 ---
 
@@ -217,12 +217,10 @@ kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
 - 責務を分離する
 
 Kubernetes は
-コンテナを動かす仕組みではなく、状態を保つ仕組みである。  
-その挙動を、実際の動きとして確認した。
+コンテナを動かす仕組みではない。
+
+**状態を保つ仕組みである。**  
 
 ここまでで、壊す・戻る・任せるという流れを体験した。
 
-という流れを体験しました。
-
-次は、設定を外に出す。  
-ConfigMap / Secret / Volume に進む。
+では、その状態や設定はどこに置かれるのか。
