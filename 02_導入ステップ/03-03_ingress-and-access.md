@@ -144,7 +144,7 @@ kubectl get httproute
 kubectl describe httproute sample-route
 ```
 
-#### 観察ポイント
+#### 観察
 - 流れは HTTPRoute 側で定義される
 - Gateway と役割が分離されている
 
@@ -255,7 +255,7 @@ kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
 
 - 流れを定義する
 
-通信は分離される。  
-では、次に進む。
+**通信は分離される。**  
+では、この構造のまま次に進む。
 
 ---
