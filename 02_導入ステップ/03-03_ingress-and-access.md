@@ -152,7 +152,7 @@ kubectl describe httproute sample-route
 
 ---
 
-## Gateway 経由でアクセスする
+## 5. Gateway 経由でアクセスする
 
 #### Gateway に紐づく Service を探します。
 ```bash
@@ -258,4 +258,4 @@ kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
 通信は分離される。  
 では、次に進む。
 
-というクラウドネイティブな設計が成立しています。
+---
