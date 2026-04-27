@@ -2,7 +2,7 @@
 
 ---
 
-想定環境：KillerCoda（Kubernetes クラスタ起動済み）
+想定環境：KillerCoda（Kubernetes クラスタ起動済み）  
 以降の操作はすべて kubectl を使用します。
 
 ---
@@ -23,58 +23,58 @@ sample-deployment と sample-service があれば OK です。
 
 ---
 
-## 1. Service の役割を確認する
-― 内部向けの接続点 ―
+## 1. Service の役割を確認する（内部向けの接続点）
 
-#### まず、Service 経由でアクセスできることを再確認します。
+#### Service 経由でアクセスを確認します。
 ```bash
 kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
   curl http://sample-service
 ```
 
-#### 🔍観察ポイント
+#### 観察
+
 - アクセス先は Pod ではない
 - Service 名だけで通信できている
 - Pod の数や入れ替わりは意識していない
 
-ここで一度整理します。
+**Service は内部の接続点である**
 
-Service は「クラスタ内部の接続点」外部公開の仕組みではありません。
-
+---
 
 ## 2. Gateway API の前提（CRD と Controller）を確認する
 
-Gateway API も、リソース単体では動きません。必ず、Gateway Controller（実装）が必要です。
+Gateway API も、リソース単体では動かない。  
+必ず、Gateway Controller（実装）が必要である。
 
-#### まず Gateway API の CRD があるかを確認します。
+#### CRD を確認します。
 ```bash
 kubectl get crd | egrep "gateways.gateway.networking.k8s.io|httproutes.gateway.networking.k8s.io" || true
 ```
 
-#### 次に、GatewayClass が存在するか確認します（Controller が提供する入口です）。
+#### GatewayClass を確認します。
 ```bash
 kubectl get gatewayclass
 ```
 
-#### ここで GatewayClass が無い場合：
-- その環境には Gateway Controller が入っていない可能性が高いです。
-- その場合は「3.〜5.（実行）」はスキップし、後半の「責務整理」を読めばOKです。
+GatewayClass がない場合、Controller が未導入の可能性がある。  
+その場合は「3.〜5.」はスキップし、「7. 責務整理」を読めば OK です。
 
+**宣言と実行は分離されている**
 
-## 3.Gateway を作成する
+---
 
-― 外部からの入口（入口の形）を定義する ―
+## 3.Gateway を作成する（外部からの入口を定義する）
 
-まず、利用可能な GatewayClass を選びます。環境により名前が異なるため、まず確認します。
+#### GatewayClass を確認します。
 ```bash
 kubectl get gatewayclass
 ```
-ここでは例として <GATEWAY_CLASS_NAME> を使います。
-（例：nginx / istio / envoy など。実際の値に置き換えてください）
+利用可能なクラス名を確認し、<GATEWAY_CLASS_NAME> を置き換えます。  
+（例：nginx / istio / envoy など）
 
-#### Gateway リソースを定義します。
+#### Gateway を作成します。
 ```bash
-ccat <<EOF > gateway.yaml
+cat <<EOF > gateway.yaml
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
@@ -100,14 +100,15 @@ kubectl get gateway
 kubectl describe gateway sample-gateway
 ```
 
-#### 🔍観察ポイント
-- Gateway は「入口の形（Listener）」を宣言している
-- まだどこへ流すか（バックエンド）は決めていない
-- 実際に入口を動かすのは Controller 側である
+#### 観察
+- Gateway は入口の形を定義している
+- どこへ流すかはまだ決まっていない
 
+**Gateway は定義であり、実行ではない**
 
-4. HTTPRoute を作成する
-― 入口から Service へ流すルールを定義する ―
+---
+
+## 4. HTTPRoute を作成する（流れを定義する）
 
 #### HTTPRoute リソースを定義します。
 ```bash
@@ -131,6 +132,7 @@ spec:
       port: 80
 EOF
 ```
+
 #### 適用します。
 ```bash
 kubectl apply -f httproute.yaml
@@ -142,26 +144,27 @@ kubectl get httproute
 kubectl describe httproute sample-route
 ```
 
-#### 🔍観察ポイント
-- ルーティング（どこに流すか）は HTTPRoute 側に切り出されている
-- Gateway（入口）と Route（振り分け）の責務が分離されている
+#### 観察ポイント
+- 流れは HTTPRoute 側で定義される
+- Gateway と役割が分離されている
 
-## 5. Gateway 経由でアクセスする（Controller 依存）
-― 「外から入る」を確認する ―
-Gateway Controller は通常、外部から受けるための Service（LoadBalancer/NodePort 等）を作ります。
-環境差が出やすいので、ここでは「まず入口の Service を探す」→「ポートフォワード」で確認します。
+**入口と振り分けは別である**
 
-#### Gateway に紐づく Service を探します（見つからない場合もあります）
+---
+
+## Gateway 経由でアクセスする
+
+#### Gateway に紐づく Service を探します。
 ```bash
 kubectl get svc -A -l gateway.networking.k8s.io/gateway-name=sample-gateway || true
 ```
 
-#### 見つかった Service の <NAMESPACE> と <SERVICE_NAME> を使ってポートフォワードします。
+#### ポートフォワードします。
 ```bash
 kubectl -n <NAMESPACE> port-forward svc/<SERVICE_NAME> 8080:80
 ```
 
-#### 別ターミナルで Host ヘッダを付けてアクセスします。
+#### 別ターミナルでアクセスします。
 ```bash
 kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
   curl -H "Host: sample.local" http://localhost:8080
@@ -169,74 +172,90 @@ kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
 
 nginx のレスポンスが返ってくれば成功です。
 
-### ※もし Service が見つからない / port-forward できない場合：
-- その環境は Gateway Controller が未導入、または外部公開形態が異なる可能性があります。
-- この場合も「責務整理」まで理解できれば、この節の目的は達成です。
+#### 観察
 
-## 6. Pod を削除してみる
-― アクセスはどうなるか ―
+- Service の裏にある Pod を意識していない
+- Gateway → Route → Service の流れで処理される
+
+※ Service が見つからない / port-forward できない場合、Gateway Controller が未導入の可能性があります。  
+その場合も「7. 責務整理」まで理解できれば、この節の目的は達成です。
+
+---
+
+## 6. Pod を削除する（構造は崩れるか）
 
 #### Pod を削除します
 ```bash
 kubectl delete pod -l app=sample
 ```
 
-#### しばらく待ってから、再度アクセスします（上と同じ curl）
+#### 再度アクセスします。
 ```bash
 kubectl run curl --rm -it --image=curlimages/curl --restart=Never -- \
   curl -H "Host: sample.local" http://localhost:8080
 ```
 
-#### 🔍観察ポイント
-- Pod が入れ替わってもアクセス方法は変わらない
-- Gateway / HTTPRoute / Service の設定は変えていない
-- アプリは「外から来ている」ことを知らない
+#### 観察
+- Pod は入れ替わる
+- アクセス方法は変わらない
 
-## 7. Service / Gateway / HTTPRoute / アプリの責務整理
+**経路は維持される**
 
-ここで、役割を整理します。
+---
+
+## 7. 責務整理
+
+ここで、各リソースの役割を整理する。
 
 ### アプリ（Pod）
-- リクエストを処理する
+- 処理を行う
 - 通信経路を知らない
 
 ### Service
-- Pod への内部接続点
-- Pod の増減を吸収する
+- 内部接続を担う
 
 ### Gateway
-- 外部からの入口
-- ルーティングを定義する
+- 外部との入口を定義する
 
 ### HTTPRoute
-- ルーティング（振り分けルール）
-- 「どの Host/Path をどの Service に流すか」を定義する
+- 流れを定義する
 
-通信の責務はアプリの外側に押し出されているという構造になっています。
+通信の責務は、アプリの外側にある。
+
+---
 
 ### 8. 何を「やっていないか」が重要
 
-このハンズオンでは、次のことを 一切やっていません。
+このハンズオンでは、次を行っていない。
+
 - アプリ側の設定変更
 - IP アドレスの指定
 - Pod 名の意識
 
-それでも、
-- 外からアクセスでき
-- Pod が入れ替わっても動く
-という状態が（Controller がある環境では）成立します。
+それでも、外部からアクセスでき、Pod が変わっても動く状態が成立した。  
+**何をしなくてよいかが、設計の意図を表している**
 
-### まとめ：このハンズオンで確認したこと
+---
 
-このハンズオンで体感したのは、Gateway API は通信を便利にする仕組みではなく、責務を分離する仕組みという点です。
-- アプリは処理に集中する
-- Service は内部接続を担う
-- Gateway は外部との境界（入口）を担う
-- HTTPRoute は振り分け（ルール）を担う
+## 9. まとめ：このハンズオンで確認したこと
 
-この分離があるからこそ、
-- 構成を変えられる
-- Pod を捨てられる
-- スケールできる
+#### Pod
+
+- 処理に集中する
+
+#### Service
+
+- 内部接続を担う
+
+#### Gateway
+
+- 入口を定義する
+
+#### HTTPRoute
+
+- 流れを定義する
+
+通信は分離される。  
+では、次に進む。
 
 というクラウドネイティブな設計が成立しています。
